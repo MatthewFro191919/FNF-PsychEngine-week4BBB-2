@@ -63,15 +63,6 @@ import openfl3.*;
 import openfl.filters.ShaderFilter;
 import openfl.filters.BitmapFilter;
 
-
-
-#if windows
-import Discord.DiscordClient;
-#end
-#if windows
-import Sys;
-import sys.FileSystem;
-#end
 class Stages extends BaseStage
 {
 	public static var runningGoblin:Character;
@@ -729,13 +720,6 @@ class Stages extends BaseStage
 	{
 		super.stepHit();
 
-		#if windows
-		if (executeModchart && luaModchart != null)
-		{
-			luaModchart.setVar('curStep',curStep);
-			luaModchart.executeState('stepHit',[curStep]);
-		}
-		#end
 		//THIS IS THE WORST CODE EVER WHY DID I DO THIS
 		//baby blue character changing
 		if (curStep == 888 && curSong.toLowerCase() == 'baby-blue')
@@ -1572,18 +1556,6 @@ class Stages extends BaseStage
 			}
 			*/
 
-
-		// yes this updates every step.
-		// yes this is bad
-		// but i'm doing it to update misses and accuracy
-		#if windows
-		// Song duration in a float, useful for the time left feature
-		songLength = FlxG.sound.music.length;
-
-		// Updating Discord Rich Presence (with Time Left)
-		DiscordClient.changePresence(detailsText + " " + SONG.song + " (" + storyDifficultyText + ") " + Ratings.GenerateLetterRank(accuracy), "Acc: " + HelperFunctions.truncateFloat(accuracy, 2) + "% | Score: " + songScore + " | Misses: " + misses  , iconRPC,true,  songLength - Conductor.songPosition);
-		#end
-
 	}
 	
 	var lightningStrikeBeat:Int = 0;
@@ -1592,14 +1564,6 @@ class Stages extends BaseStage
 	override function beatHit()
 	{
 		super.beatHit();
-
-		#if windows
-		if (executeModchart && luaModchart != null)
-		{
-			luaModchart.setVar('curBeat',curBeat);
-			luaModchart.executeState('beatHit',[curBeat]);
-		}
-		#end
 
 		if (curSong == 'Tutorial' && dad.curCharacter == 'gf') {
 			if (curBeat % 2 == 1 && dad.animOffsets.exists('danceLeft'))
