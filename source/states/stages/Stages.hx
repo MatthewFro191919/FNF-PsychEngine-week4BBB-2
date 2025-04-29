@@ -440,7 +440,6 @@ class Stages extends BaseStage
 					floorSkew = new FlxSkewedSprite(100, -50,Paths.image('dreambg'));
 					floorSkew.scrollFactor.set(1,1);
 					add(floorSkew);
-					//floorSkew.skew.x = camPos.x;
 				}
 		}
 	}
@@ -582,39 +581,26 @@ class Stages extends BaseStage
 			case 'gf':
 				dad.setPosition(gf.x, gf.y);
 				gf.visible = false;
-				if (isStoryMode)
-				{
-					camPos.x += 600;
-				}
-
 			case "spooky":
 				dad.y += 200;
 			case "monster":
 				dad.y += 100;
 			case 'monster-christmas':
 				dad.y += 130;
-			case 'dad':
-				camPos.x += 400;
 			case 'pico':
-				camPos.x += 600;
 				dad.y += 300;
 			case 'parents-christmas':
 				dad.x -= 500;
 			case 'senpai':
 				dad.x += 150;
 				dad.y += 360;
-				camPos.set(dad.getGraphicMidpoint().x + 300, dad.getGraphicMidpoint().y);
 			case 'senpai-angry':
 				dad.x += 150;
 				dad.y += 360;
-				camPos.set(dad.getGraphicMidpoint().x + 300, dad.getGraphicMidpoint().y);
 			case 'spirit':
 				dad.x -= 150;
 				dad.y += 100;
-				camPos.set(dad.getGraphicMidpoint().x + 300, dad.getGraphicMidpoint().y);
 			case 'baby':
-				camPos.x += 600;
-				camPos.y += 300;
 				dad.y += 440;
 				dad.x += 120;
 			case 'miku':
@@ -642,11 +628,9 @@ class Stages extends BaseStage
 			case 'evil-baby':
 				dad.y += 350;
 				dad.x += 125;
-				camPos.set(dad.getGraphicMidpoint().x + 300, dad.getGraphicMidpoint().y - 300);
 			case 'gametoons':
 				dad.y += 370;
 				dad.x += 200;
-				camPos.set(dad.getGraphicMidpoint().x + 300, dad.getGraphicMidpoint().y);
 			case 'alien':
 				dad.y += 230;
 				dad.x += 0;
@@ -663,7 +647,6 @@ class Stages extends BaseStage
 			case 'happy-baby':
 				dad.y += 440;
 				dad.x += 120;
-				camPos.set(dad.getGraphicMidpoint().x + 300, dad.getGraphicMidpoint().y - 50);
 			case 'kitty':
 				dad.y += 440;
 				dad.x += 120;
@@ -673,7 +656,6 @@ class Stages extends BaseStage
 			case 'window-watcher':
 				dad.x += 75;
 				dad.y += 280;
-				camPos.set(dad.getGraphicMidpoint().x + 300, dad.getGraphicMidpoint().y + 40);
 				FlxTween.tween(dad, {x: 260}, 2, {type: FlxTweenType.PINGPONG, ease: FlxEase.sineInOut});
 				FlxTween.tween(dad, {y: 180}, 6, {type: FlxTweenType.PINGPONG, ease: FlxEase.sineInOut});
             }
