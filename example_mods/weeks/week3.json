@@ -1,0 +1,22 @@
+{
+	"songs": [
+		["Baby-Bob", "bob", [146, 113, 253]],
+		["Just-Like-You", "bob-ron", [146, 113, 253]],
+		["Insignificance", "bobcreature", [146, 113, 253]]
+	],
+
+	"weekCharacters": [
+		"dad",
+		"bf",
+		"gf"
+	],
+	"weekBackground": "stage",
+
+	"storyName": "Babysit your diaper shitting little brother",
+	"weekBefore": "tutorial",
+	"weekName": "Week 1",
+	"startUnlocked": true,
+
+	"hideStoryMode": false,
+	"hideFreeplay": false
+}
