@@ -198,4 +198,8 @@
 	<icon path="art/icons/icon32.png" size='32'/>
 	<icon path="art/icons/icon64.png" size='64'/>
 	<icon path="art/icons/iconOG.png" />
+	<icon path="art/icons/icon8.png" size='8'/>
+	<icon path="art/icons/icon128.png" size='128'/>
+	<icon path="art/icons/icon256.png" size='256'/>
+	<icon path="art/icons/icon512.png" size='512'/>
 </project>
