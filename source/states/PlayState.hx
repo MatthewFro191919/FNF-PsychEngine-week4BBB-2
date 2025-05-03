@@ -267,6 +267,8 @@ class PlayState extends MusicBeatState
 	private static var _lastLoadedModDirectory:String = '';
 	public static var nextReloadAll:Bool = false;
 
+	public static var videoDialogue:Int;
+
 	override public function create()
 	{
 		//trace('Playback Rate: ' + playbackRate);
