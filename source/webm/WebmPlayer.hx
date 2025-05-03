@@ -12,6 +12,7 @@ import openfl.media.Sound;
 import openfl.media.SoundChannel;
 import openfl.utils.ByteArray;
 import openfl.utils.Endian;
+import webm.*;
 
 using Std;
 
