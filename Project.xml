@@ -125,7 +125,7 @@
 	<haxelib name="flxanimate"/>
 
 	<haxelib name="actuate"/>
-	<haxelib name="extension-webm"/>
+	<haxelib name="openfl-webm"/>
 
 	<!-- Disable Discord IO Thread -->
 	<haxedef name="DISCORD_DISABLE_IO_THREAD" if="hxdiscord_rpc" />
