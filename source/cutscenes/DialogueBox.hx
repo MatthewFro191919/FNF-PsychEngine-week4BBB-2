@@ -23,7 +23,11 @@ class DialogueBox extends FlxSpriteGroup
 
 	var handSelect:FlxSprite;
 	var bgFade:FlxSprite;
+	var noMore:Bool = false;
 	var skipText:FlxText;
+	var cave:FlxSprite;
+	var cave2:FlxSprite;
+	var cave3:FlxSprite;
 
 	var songName:String = Paths.formatToSongPath(Song.loadedSongName);
 	public function new(talkingRight:Bool = true, ?dialogueList:Array<String>)
@@ -69,7 +73,6 @@ class DialogueBox extends FlxSpriteGroup
 				{
 					if (PlayState.videoDialogue == 1)
 					{
-						PlayState.noBlackShit = true;
 						FlxG.sound.playMusic(Paths.music('LunchboxScary'), 0.485);
 						FlxG.sound.music.fadeIn(1, 0, 0.8);
 					}
@@ -94,7 +97,6 @@ class DialogueBox extends FlxSpriteGroup
 				{
 					if (PlayState.videoDialogue == 1)
 					{
-						//PlayState.noBlackShit = true;
 						FlxG.sound.playMusic(Paths.music('shakey'), 0.485);
 						FlxG.sound.music.fadeIn(1, 0, 0.8);
 					}
