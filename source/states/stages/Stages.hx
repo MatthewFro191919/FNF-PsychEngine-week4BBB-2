@@ -444,6 +444,37 @@ class Stages extends BaseStage
 		}
 	}
 	
+	var doof:DialogueBox = null;
+	function initDoof()
+	{
+		var file:String = Paths.txt('$songName/dialogue_${ClientPrefs.data.language}');
+		#if MODS_ALLOWED
+		if (!FileSystem.exists(file))
+		#else
+		if (!OpenFlAssets.exists(file))
+		#end
+		{
+			file = Paths.txt('$songName/dialogue');
+		}
+
+		#if MODS_ALLOWED
+		if (!FileSystem.exists(file))
+		#else
+		if (!OpenFlAssets.exists(file))
+		#end
+		{
+			startCountdown();
+			return;
+		}
+
+		doof = new DialogueBox(false, CoolUtil.coolTextFile(file));
+		doof.cameras = [camHUD];
+		doof.scrollFactor.set();
+		doof.finishThing = startCountdown;
+		doof.nextDialogueThing = PlayState.instance.startNextDialogue;
+		doof.skipDialogueThing = PlayState.instance.skipDialogue;
+	}
+
 	function Bobismad()
 		{
 			bobmadshake.visible = true;
