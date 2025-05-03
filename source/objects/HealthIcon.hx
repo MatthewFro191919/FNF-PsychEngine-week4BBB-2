@@ -31,7 +31,7 @@ class HealthIcon extends FlxSprite
 	private var iconOffsets:Array<Float> = [0, 0];
 	public function changeIcon(char:String, ?allowGPU:Bool = true) {
 		if(this.char != char) {
-				loadGraphic(Paths.image('old-icons/iconGrid'), true, 150, 150);
+				loadGraphic(Paths.image('gameshit/iconGrid'), true, 150, 150);
 
 				antialiasing = true;
 				animation.add('bf', [0, 1], 0, false, isPlayer);
