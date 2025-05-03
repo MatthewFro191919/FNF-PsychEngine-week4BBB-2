@@ -4,6 +4,7 @@ import states.stages.objects.*;
 import objects.*;
 import states.*;
 import backend.*;
+import cutscenes.*;
 import states.PlayState.SONG;
 
 import flixel.input.keyboard.FlxKey;
