@@ -1,306 +1,477 @@
 package objects;
 
-import flixel.tweens.FlxEase;
-import flixel.tweens.FlxTween;
-import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.graphics.frames.FlxAtlasFrames;
-import flixel.group.FlxSpriteGroup;
-import flixel.math.FlxMath;
-import flixel.util.FlxTimer;
+import haxe.Json;
+import openfl.utils.Assets;
 
-using StringTools;
+enum Alignment
+{
+	LEFT;
+	CENTERED;
+	RIGHT;
+}
 
-/**
- * Loosley based on FlxTypeText lolol
- */
 class Alphabet extends FlxSpriteGroup
 {
-	public var delay:Float = 0.05;
-	public var paused:Bool = false;
+	public var text(default, set):String;
 
-	// for menu shit
-	public var targetY:Float = 0;
+	public var bold:Bool = false;
+	public var letters:Array<AlphaCharacter> = [];
+
 	public var isMenuItem:Bool = false;
+	public var targetY:Int = 0;
+	public var changeX:Bool = true;
+	public var changeY:Bool = true;
 
-	public var text:String = "";
+	public var alignment(default, set):Alignment = LEFT;
+	public var scaleX(default, set):Float = 1;
+	public var scaleY(default, set):Float = 1;
+	public var rows:Int = 0;
 
-	var _finalText:String = "";
-	var _curText:String = "";
+	public var distancePerItem:FlxPoint = new FlxPoint(20, 120);
+	public var startPosition:FlxPoint = new FlxPoint(0, 0); //for the calculations
 
-	public var widthOfWords:Float = FlxG.width;
-
-	var yMulti:Float = 1;
-
-	// custom shit
-	// amp, backslash, question mark, apostrophy, comma, angry faic, period
-	var lastSprite:AlphaCharacter;
-	var xPosResetted:Bool = false;
-	var lastWasSpace:Bool = false;
-
-	var listOAlphabets:List<AlphaCharacter> = new List<AlphaCharacter>();
-
-	var splitWords:Array<String> = [];
-
-	var isBold:Bool = false;
-
-	public function new(x:Float, y:Float, text:String = "", ?bold:Bool = false, typed:Bool = false, shouldMove:Bool = false)
+	public function new(x:Float, y:Float, text:String = "", ?bold:Bool = true)
 	{
 		super(x, y);
 
-		_finalText = text;
+		this.startPosition.x = x;
+		this.startPosition.y = y;
+		this.bold = bold;
 		this.text = text;
-		isBold = bold;
+	}
 
-		if (text != "")
+	public function setAlignmentFromString(align:String)
+	{
+		switch(align.toLowerCase().trim())
 		{
-			if (typed)
-			{
-				startTypedText();
-			}
-			else
-			{
-				addText();
-			}
-
+			case 'right':
+				alignment = RIGHT;
+			case 'center' | 'centered':
+				alignment = CENTERED;
+			default:
+				alignment = LEFT;
 		}
 	}
 
-	public function addText()
+	private function set_alignment(align:Alignment)
 	{
-		doSplitWords();
+		alignment = align;
+		updateAlignment();
+		return align;
+	}
 
-		var xPos:Float = 0;
-		for (character in splitWords)
+	private function updateAlignment()
+	{
+		for (letter in letters)
 		{
-			// if (character.fastCodeAt() == " ")
-			// {
-			// }
-
-			if (character == " " || character == "-")
+			var newOffset:Float = 0;
+			switch(alignment)
 			{
-				lastWasSpace = true;
+				case CENTERED:
+					newOffset = letter.rowWidth / 2;
+				case RIGHT:
+					newOffset = letter.rowWidth;
+				default:
+					newOffset = 0;
 			}
-
-			if (AlphaCharacter.alphabet.indexOf(character.toLowerCase()) != -1)
-				// if (AlphaCharacter.alphabet.contains(character.toLowerCase()))
-			{
-				if (lastSprite != null)
-				{
-					xPos = lastSprite.x + lastSprite.width;
-				}
-
-				if (lastWasSpace)
-				{
-					xPos += 40;
-					lastWasSpace = false;
-				}
-
-				// var letter:AlphaCharacter = new AlphaCharacter(30 * loopNum, 0);
-				var letter:AlphaCharacter = new AlphaCharacter(xPos, 0);
-				listOAlphabets.add(letter);
-
-				if (isBold)
-					letter.createBold(character);
-				else
-				{
-					letter.createLetter(character);
-				}
-
-				add(letter);
-
-				lastSprite = letter;
-			}
-
-			// loopNum += 1;
+	
+			letter.offset.x -= letter.alignOffset;
+			letter.alignOffset = newOffset * scale.x;
+			letter.offset.x += letter.alignOffset;
 		}
 	}
 
-	function doSplitWords():Void
+	private function set_text(newText:String)
 	{
-		splitWords = _finalText.split("");
+		newText = newText.replace('\\n', '\n');
+		clearLetters();
+		createLetters(newText);
+		updateAlignment();
+		this.text = newText;
+		return newText;
 	}
 
-	public var personTalking:String = 'gf';
-
-	public function startTypedText():Void
+	public function clearLetters()
 	{
-		_finalText = text;
-		doSplitWords();
-
-		// trace(arrayShit);
-
-		var loopNum:Int = 0;
-
-		var xPos:Float = 0;
-		var curRow:Int = 0;
-
-		new FlxTimer().start(0.05, function(tmr:FlxTimer)
+		var i:Int = letters.length;
+		while (i > 0)
 		{
-			// trace(_finalText.fastCodeAt(loopNum) + " " + _finalText.charAt(loopNum));
-			if (_finalText.fastCodeAt(loopNum) == "\n".code)
+			--i;
+			var letter:AlphaCharacter = letters[i];
+			if(letter != null)
 			{
-				yMulti += 1;
-				xPosResetted = true;
-				xPos = 0;
-				curRow += 1;
+				letter.kill();
+				letters.remove(letter);
+				remove(letter);
 			}
+		}
+		letters = [];
+		rows = 0;
+	}
 
-			if (splitWords[loopNum] == " ")
+	public function setScale(newX:Float, newY:Null<Float> = null)
+	{
+		var lastX:Float = scale.x;
+		var lastY:Float = scale.y;
+		if(newY == null) newY = newX;
+		@:bypassAccessor
+			scaleX = newX;
+		@:bypassAccessor
+			scaleY = newY;
+
+		scale.x = newX;
+		scale.y = newY;
+		softReloadLetters(newX / lastX, newY / lastY);
+	}
+
+	private function set_scaleX(value:Float)
+	{
+		if (value == scaleX) return value;
+
+		var ratio:Float = value / scale.x;
+		scale.x = value;
+		scaleX = value;
+		softReloadLetters(ratio, 1);
+		return value;
+	}
+
+	private function set_scaleY(value:Float)
+	{
+		if (value == scaleY) return value;
+
+		var ratio:Float = value / scale.y;
+		scale.y = value;
+		scaleY = value;
+		softReloadLetters(1, ratio);
+		return value;
+	}
+
+	public function softReloadLetters(ratioX:Float = 1, ratioY:Null<Float> = null)
+	{
+		if(ratioY == null) ratioY = ratioX;
+
+		for (letter in letters)
+		{
+			if(letter != null)
 			{
-				lastWasSpace = true;
+				letter.setupAlphaCharacter(
+					(letter.x - x) * ratioX + x,
+					(letter.y - y) * ratioY + y
+				);
 			}
-
-			#if (haxe >= "4.0.0")
-			var isNumber:Bool = AlphaCharacter.numbers.contains(splitWords[loopNum]);
-			var isSymbol:Bool = AlphaCharacter.symbols.contains(splitWords[loopNum]);
-			#else
-			var isNumber:Bool = AlphaCharacter.numbers.indexOf(splitWords[loopNum]) != -1;
-			var isSymbol:Bool = AlphaCharacter.symbols.indexOf(splitWords[loopNum]) != -1;
-			#end
-
-			if (AlphaCharacter.alphabet.indexOf(splitWords[loopNum].toLowerCase()) != -1 || isNumber || isSymbol)
-				// if (AlphaCharacter.alphabet.contains(splitWords[loopNum].toLowerCase()) || isNumber || isSymbol)
-
-			{
-				if (lastSprite != null && !xPosResetted)
-				{
-					lastSprite.updateHitbox();
-					xPos += lastSprite.width + 3;
-					// if (isBold)
-					// xPos -= 80;
-				}
-				else
-				{
-					xPosResetted = false;
-				}
-
-				if (lastWasSpace)
-				{
-					xPos += 20;
-					lastWasSpace = false;
-				}
-				// trace(_finalText.fastCodeAt(loopNum) + " " + _finalText.charAt(loopNum));
-
-				// var letter:AlphaCharacter = new AlphaCharacter(30 * loopNum, 0);
-				var letter:AlphaCharacter = new AlphaCharacter(xPos, 55 * yMulti);
-				listOAlphabets.add(letter);
-				letter.row = curRow;
-				if (isBold)
-				{
-					letter.createBold(splitWords[loopNum]);
-				}
-				else
-				{
-					if (isNumber)
-					{
-						letter.createNumber(splitWords[loopNum]);
-					}
-					else if (isSymbol)
-					{
-						letter.createSymbol(splitWords[loopNum]);
-					}
-					else
-					{
-						letter.createLetter(splitWords[loopNum]);
-					}
-
-					letter.x += 90;
-				}
-
-				if (FlxG.random.bool(40))
-				{
-					var daSound:String = "GF_";
-					FlxG.sound.play(Paths.soundRandom(daSound, 1, 4));
-				}
-
-				add(letter);
-
-				lastSprite = letter;
-			}
-
-			loopNum += 1;
-
-			tmr.time = FlxG.random.float(0.04, 0.09);
-		}, splitWords.length);
+		}
 	}
 
 	override function update(elapsed:Float)
 	{
 		if (isMenuItem)
 		{
-			var scaledY = FlxMath.remapToRange(targetY, 0, 1, 0, 1.3);
-
-			y = FlxMath.lerp(y, (scaledY * 120) + (FlxG.height * 0.48), 0.30);
-			x = FlxMath.lerp(x, (targetY * 20) + 90, 0.30);
+			var lerpVal:Float = Math.exp(-elapsed * 9.6);
+			if(changeX)
+				x = FlxMath.lerp((targetY * distancePerItem.x) + startPosition.x, x, lerpVal);
+			if(changeY)
+				y = FlxMath.lerp((targetY * 1.3 * distancePerItem.y) + startPosition.y, y, lerpVal);
 		}
-
 		super.update(elapsed);
 	}
+
+	public function snapToPosition()
+	{
+		if (isMenuItem)
+		{
+			if(changeX)
+				x = (targetY * distancePerItem.x) + startPosition.x;
+			if(changeY)
+				y = (targetY * 1.3 * distancePerItem.y) + startPosition.y;
+		}
+	}
+
+	private static var Y_PER_ROW:Float = 85;
+
+	private function createLetters(newText:String)
+	{
+		var consecutiveSpaces:Int = 0;
+
+		var xPos:Float = 0;
+		var rowData:Array<Float> = [];
+		rows = 0;
+		for (i in 0...newText.length)
+		{
+			var character:String = newText.charAt(i);
+			if(character != '\n')
+			{
+				var spaceChar:Bool = (character == " " || (bold && character == "_"));
+				if (spaceChar) consecutiveSpaces++;
+
+				var isAlphabet:Bool = AlphaCharacter.isTypeAlphabet(character.toLowerCase());
+				if (AlphaCharacter.allLetters.exists(character.toLowerCase()) && (!bold || !spaceChar))
+				{
+					if (consecutiveSpaces > 0)
+					{
+						xPos += 28 * consecutiveSpaces * scaleX;
+						rowData[rows] = xPos;
+						if(!bold && xPos >= FlxG.width * 0.65)
+						{
+							xPos = 0;
+							rows++;
+						}
+					}
+					consecutiveSpaces = 0;
+
+					var letter:AlphaCharacter = cast recycle(AlphaCharacter, true);
+					letter.scale.x = scaleX;
+					letter.scale.y = scaleY;
+					letter.rowWidth = 0;
+
+					letter.setupAlphaCharacter(xPos, rows * Y_PER_ROW * scale.y, character, bold);
+					@:privateAccess letter.parent = this;
+
+					letter.row = rows;
+					var off:Float = 0;
+					if(!bold) off = 2;
+					xPos += letter.width + (letter.letterOffset[0] + off) * scale.x;
+					rowData[rows] = xPos;
+
+					add(letter);
+					letters.push(letter);
+				}
+			}
+			else
+			{
+				xPos = 0;
+				rows++;
+			}
+		}
+
+		for (letter in letters)
+		{
+			letter.rowWidth = rowData[letter.row] / scale.x;
+		}
+
+		if(letters.length > 0) rows++;
+	}
+}
+
+
+///////////////////////////////////////////
+// ALPHABET LETTERS, SYMBOLS AND NUMBERS //
+///////////////////////////////////////////
+
+/*enum LetterType
+{
+	ALPHABET;
+	NUMBER_OR_SYMBOL;
+}*/
+
+typedef Letter = {
+	?anim:Null<String>,
+	?offsets:Array<Float>,
+	?offsetsBold:Array<Float>
 }
 
 class AlphaCharacter extends FlxSprite
 {
-	public static var alphabet:String = "abcdefghijklmnopqrstuvwxyz";
+	//public static var alphabet:String = "abcdefghijklmnopqrstuvwxyz";
+	//public static var numbers:String = "1234567890";
+	//public static var symbols:String = "|~#$%()*+-:;<=>@[]^_.,'!?";
 
-	public static var numbers:String = "";
+	public var image(default, set):String;
 
-	public static var symbols:String = "";
+	public static var allLetters:Map<String, Null<Letter>>;
+
+	public static function loadAlphabetData(request:String = 'alphabet')
+	{
+		var path:String = Paths.getPath('images/$request.json');
+		#if MODS_ALLOWED
+		if(!FileSystem.exists(path))
+		#else
+		if(!Assets.exists(path, TEXT))
+		#end
+			path = Paths.getPath('images/alphabet.json');
+
+		allLetters = new Map<String, Null<Letter>>();
+		try
+		{
+			#if MODS_ALLOWED
+			var data:Dynamic = Json.parse(File.getContent(path));
+			#else
+			var data:Dynamic = Json.parse(Assets.getText(path));
+			#end
+
+			if(data.allowed != null && data.allowed.length > 0)
+			{
+				for (i in 0...data.allowed.length)
+				{
+					var char:String = data.allowed.charAt(i);
+					if(char == ' ') continue;
+					
+					allLetters.set(char.toLowerCase(), null); //Allows character to be used in Alphabet
+				}
+			}
+
+			if(data.characters != null)
+			{
+				for (char in Reflect.fields(data.characters))
+				{
+					var letterData = Reflect.field(data.characters, char);
+					var character:String = char.toLowerCase().substr(0, 1);
+					if((letterData.animation != null || letterData.normal != null || letterData.bold != null) && allLetters.exists(character))
+						allLetters.set(character, {anim: letterData.animation, offsets: letterData.normal, offsetsBold: letterData.bold});
+				}
+			}
+			trace('Reloaded letters successfully ($path)!');
+		}
+		catch(e:Dynamic)
+		{
+			FlxG.log.error('Error on loading alphabet data: $e');
+			trace('Error on loading alphabet data: $e');
+		}
+
+		if(!allLetters.exists('?'))
+			allLetters.set('?', {anim: 'question'});
+	}
+
+	var parent:Alphabet;
+	public var alignOffset:Float = 0; //Don't change this
+	public var letterOffset:Array<Float> = [0, 0];
 
 	public var row:Int = 0;
-
-	public function new(x:Float, y:Float)
+	public var rowWidth:Float = 0;
+	public var character:String = '?';
+	public function new()
 	{
 		super(x, y);
-		var tex = Paths.getSparrowAtlas('alphabet');
-		frames = tex;
-
-		antialiasing = true;
+		image = 'alphabet';
+		antialiasing = ClientPrefs.data.antialiasing;
 	}
-
-	public function createBold(letter:String)
+	
+	public var curLetter:Letter = null;
+	public function setupAlphaCharacter(x:Float, y:Float, ?character:String = null, ?bold:Null<Bool> = null)
 	{
-		animation.addByPrefix(letter, letter.toUpperCase() + " capital", 24);
-		animation.play(letter);
+		this.x = x;
+		this.y = y;
+
+		if(parent != null)
+		{
+			if(bold == null)
+				bold = parent.bold;
+			this.scale.x = parent.scaleX;
+			this.scale.y = parent.scaleY;
+		}
+		
+		if(character != null)
+		{
+			this.character = character;
+			curLetter = null;
+			var lowercase:String = this.character.toLowerCase();
+			if(allLetters.exists(lowercase)) curLetter = allLetters.get(lowercase);
+			else curLetter = allLetters.get('?');
+
+			var postfix:String = '';
+			if(!bold)
+			{
+				if(isTypeAlphabet(lowercase))
+				{
+					if(lowercase != this.character)
+						postfix = ' uppercase';
+					else
+						postfix = ' lowercase';
+				}
+				else postfix = ' normal';
+			}
+			else postfix = ' bold';
+
+			var alphaAnim:String = lowercase;
+			if(curLetter != null && curLetter.anim != null) alphaAnim = curLetter.anim;
+
+			var anim:String = alphaAnim + postfix;
+			animation.addByPrefix(anim, anim, 24);
+			animation.play(anim, true);
+			if(animation.curAnim == null)
+			{
+				if(postfix != ' bold') postfix = ' normal';
+				anim = 'question' + postfix;
+				animation.addByPrefix(anim, anim, 24);
+				animation.play(anim, true);
+			}
+		}
 		updateHitbox();
 	}
 
-	public function createLetter(letter:String):Void
+	public static function isTypeAlphabet(c:String) // thanks kade
 	{
-		var letterCase:String = "lowercase";
-		if (letter.toLowerCase() != letter)
+		var ascii = StringTools.fastCodeAt(c, 0);
+		return (ascii >= 65 && ascii <= 90)
+			|| (ascii >= 97 && ascii <= 122)
+			|| (ascii >= 192 && ascii <= 214)
+			|| (ascii >= 216 && ascii <= 246)
+			|| (ascii >= 248 && ascii <= 255);
+	}
+
+	private function set_image(name:String)
+	{
+		if(frames == null) //first setup
 		{
-			letterCase = 'capital';
+			image = name;
+			frames = Paths.getSparrowAtlas(name);
+			return name;
 		}
 
-		animation.addByPrefix(letter, letter + " " + letterCase, 24);
-		animation.play(letter);
-		updateHitbox();
-
-		FlxG.log.add('the row' + row);
-
-		y = (110 - height);
-		y += row * 60;
-	}
-
-	public function createNumber(letter:String):Void
-	{
-		animation.addByPrefix(letter, letter, 24);
-		animation.play(letter);
-
-		updateHitbox();
-	}
-
-	public function createSymbol(letter:String)
-	{
-		switch (letter)
+		var lastAnim:String = null;
+		if (animation != null)
 		{
-			default:
-				animation.addByPrefix(letter, 'A capital', 24);
-				animation.play(letter);
-				y += 50;
+			lastAnim = animation.name;
+		}
+		image = name;
+		frames = Paths.getSparrowAtlas(name);
+		this.scale.x = parent.scaleX;
+		this.scale.y = parent.scaleY;
+		alignOffset = 0;
+		
+		if (lastAnim != null)
+		{
+			animation.addByPrefix(lastAnim, lastAnim, 24);
+			animation.play(lastAnim, true);
+			
+			updateHitbox();
+		}
+		return name;
+	}
+
+	public function updateLetterOffset()
+	{
+		if (animation.curAnim == null)
+		{
+			trace(character);
+			return;
 		}
 
-		updateHitbox();
+		var add:Float = 110;
+		if(animation.curAnim.name.endsWith('bold'))
+		{
+			if(curLetter != null && curLetter.offsetsBold != null)
+			{
+				letterOffset[0] = curLetter.offsetsBold[0];
+				letterOffset[1] = curLetter.offsetsBold[1];
+			}
+			add = 70;
+		}
+		else
+		{
+			if(curLetter != null && curLetter.offsets != null)
+			{
+				letterOffset[0] = curLetter.offsets[0];
+				letterOffset[1] = curLetter.offsets[1];
+			}
+		}
+		add *= scale.y;
+		offset.x += letterOffset[0] * scale.x;
+		offset.y += letterOffset[1] * scale.y - (add - height);
+	}
+
+	override public function updateHitbox()
+	{
+		super.updateHitbox();
+		updateLetterOffset();
 	}
 }
