@@ -1876,7 +1876,7 @@ class Stages extends BaseStage
 						case 1088:
 							health -= 1.25;
 						case 1095:
-							camGame.x += 300;AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+							camGame.x += 300;
 							defaultCamZoom = 5;
 						case 1099:
 							defaultCamZoom = 0.9;
