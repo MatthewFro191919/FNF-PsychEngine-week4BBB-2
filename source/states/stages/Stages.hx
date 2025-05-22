@@ -1816,14 +1816,12 @@ class Stages extends BaseStage
 							camGame.alpha = 0;
 							epiclight.visible = false;
 							bgevil.visible = false;
-							//windowpoppers.visible = false;
-							/*
+							windowpoppers.visible = false;
 							chairummmm.visible = true;
 							chair2.visible = true;
 							table2.visible = true;
 							monitor.visible = true;
-							*/
-							//pot.visible = true;
+							pot.visible = true;
 						case 304:
 							coolshadergayshitlol = true;
 							defaultCamZoom = 1.25;
@@ -1872,21 +1870,22 @@ class Stages extends BaseStage
 						case 930:
 							defaultCamZoom = 0.9;
 						case 943:
-							//defaultCamZoom = 1.05;
+							defaultCamZoom = 1.05;
 						case 992:
 							defaultCamZoom = 1.25;
 						case 1088:
 							health -= 1.25;
 						case 1095:
-							//camGame.x += 300;AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+							camGame.x += 300;AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 							defaultCamZoom = 5;
 						case 1099:
 							defaultCamZoom = 0.9;
-							//health -= 1;
+							health -= 1;
 							fleedbaby.visible = true;
-							//camGame.x -= 300;
+							camGame.x -= 300;
 							changeBf('micbf');
 							SONG.player2 = ("window-watcher");
+							SONG.player1 = ("micbf");
 							changeDaddy('window-watcher');
 							FlxTween.tween(dad, {x: 260}, 2, {type: FlxTweenType.PINGPONG, ease: FlxEase.sineInOut});
 							FlxTween.tween(dad, {y: 180}, 6, {type: FlxTweenType.PINGPONG, ease: FlxEase.sineInOut});
