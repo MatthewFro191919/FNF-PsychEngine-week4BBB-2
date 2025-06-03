@@ -48,12 +48,9 @@ class HealthIcon extends FlxSprite
 		switch (char) {
 			case 'bobcreature':
 				frames = Paths.getSparrowAtlas('icons/bobcreature_icon');
-
 				animation.addByPrefix('normal', 'normal', 24, true);
 				animation.addByPrefix('lose', 'lose', 24, true);
 				animation.play('normal');
-
-				animatedIcon = true;
 		}
 
 	}
